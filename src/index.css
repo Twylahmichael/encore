@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply font-body text-efn-black bg-efn-white;
+}
+
+h1, h2, h3, h4 {
+  @apply font-heading font-bold;
+}
+
+/* Elementor's live button style: transparent, 2px border, square corners,
+   fills solid on hover. Sampled from .elementor-button in post-198.css. */
+.btn-outline {
+  @apply inline-block border-2 border-efn-white text-efn-white font-semibold text-lg
+         px-8 py-4 transition-colors duration-200
+         hover:bg-efn-white hover:text-efn-black;
+}
+
+.btn-outline-dark {
+  @apply inline-block border-2 border-efn-black text-efn-black font-semibold text-lg
+         px-8 py-4 transition-colors duration-200
+         hover:bg-efn-black hover:text-efn-white;
+}
+
+.btn-solid {
+  @apply inline-block bg-efn-green text-efn-white font-semibold text-lg
+         px-8 py-4 transition-colors duration-200
+         hover:bg-efn-green-deep;
+}

@@ -78,12 +78,14 @@ export function Contacts() {
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">Visit Us at</h3>
-              <p>2nd Floor, Quickmart Buruburu Building, Suite No. 228, Nairobi</p>
+              <p>2nd Floor, Quickmart Buruburu Building, Mumias Road, Suite No. 228, Nairobi</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">Follow Us On</h3>
               {/* Live site links only these two — Facebook and Instagram.
-                  No TikTok link currently exists; see docs/COMPARISON.md. */}
+                  No TikTok link currently exists; see docs/COMPARISON.md.
+                  Instagram handle per the physical brochure (@encorefitnessstudio),
+                  confirmed over the scraped live-site link (encorefitness_buru). */}
               <div className="flex gap-4">
                 <a
                   href="https://www.facebook.com/share/196N1fNGHj/?mibextid=qi2Omg"
@@ -94,7 +96,7 @@ export function Contacts() {
                   Facebook
                 </a>
                 <a
-                  href="https://www.instagram.com/encorefitness_buru?igsh=MWE1NDN0bm5hbWo4bg=="
+                  href="https://www.instagram.com/encorefitnessstudio"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-efn-green"

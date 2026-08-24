@@ -1,22 +1,30 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useStaffAuth } from '../../lib/useStaffAuth';
+import { PasswordField } from '../../components/PasswordField';
 
-// Staff/owner sign-in. There's no open signup: a brand-new Supabase project
-// has zero rows in staff_profiles, so the FIRST person to sign up here and
-// hit "Claim Owner Account" becomes owner (allowed once by the "bootstrap
-// first owner" RLS policy in 0002). Every account after that must be added
-// by an existing owner — this UI doesn't offer general staff self-signup.
+// Staff/owner sign-in. There's no open signup: the FIRST person to
+// "First-time setup" and successfully sign in becomes owner. Every account
+// after that must be added by an existing owner — this UI doesn't offer
+// general staff self-signup.
+//
+// Note: profile-row creation does NOT happen right after signUp() — if
+// email confirmation is required (the Supabase default), there's no
+// session yet at that point, so it happens on the next successful sign-in
+// instead, via useStaffAuth's self-heal (see supabase/migrations/
+// 0006_fix_signup_profile_creation.sql for why).
 export function AdminLogin() {
   const { refresh } = useStaffAuth();
   const [mode, setMode] = useState<'login' | 'bootstrap'>('login');
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [busy, setBusy] = useState(false);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setBusy(true);
     setError('');
+    setInfo('');
     const form = new FormData(e.currentTarget);
     const { error } = await supabase.auth.signInWithPassword({
       email: String(form.get('email')),
@@ -31,32 +39,30 @@ export function AdminLogin() {
     e.preventDefault();
     setBusy(true);
     setError('');
+    setInfo('');
     const form = new FormData(e.currentTarget);
     const email = String(form.get('email'));
     const password = String(form.get('password'));
     const name = String(form.get('name'));
 
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
-    if (signUpError || !data.user) {
-      setError(signUpError?.message ?? 'Could not create account.');
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name } },
+    });
+    if (signUpError) {
+      setError(signUpError.message);
       setBusy(false);
       return;
     }
 
-    const { error: profileError } = await supabase
-      .from('staff_profiles')
-      .insert({ id: data.user.id, role: 'owner', name });
-
-    if (profileError) {
-      setError(
-        'Account created, but an owner already exists — ask them to add you as staff. ' +
-        `(${profileError.message})`,
-      );
-      setBusy(false);
-      return;
+    if (data.session) {
+      // Confirmation not required — we're already signed in; claim now.
+      await refresh();
+    } else {
+      setInfo('Account created — check your email to confirm it, then sign in. You’ll become the owner automatically on your first successful sign-in.');
+      setMode('login');
     }
-
-    await refresh();
     setBusy(false);
   };
 
@@ -67,31 +73,29 @@ export function AdminLogin() {
 
         <div className="flex border-b border-efn-gray/30 mb-6 text-sm">
           <button
-            onClick={() => setMode('login')}
+            onClick={() => { setMode('login'); setError(''); setInfo(''); }}
             className={`flex-1 py-2 ${mode === 'login' ? 'border-b-2 border-efn-green text-efn-green font-semibold' : 'text-efn-black/50'}`}
           >
             Sign in
           </button>
           <button
-            onClick={() => setMode('bootstrap')}
+            onClick={() => { setMode('bootstrap'); setError(''); setInfo(''); }}
             className={`flex-1 py-2 ${mode === 'bootstrap' ? 'border-b-2 border-efn-green text-efn-green font-semibold' : 'text-efn-black/50'}`}
           >
             First-time setup
           </button>
         </div>
 
+        {info && <p className="text-efn-green text-sm mb-4">{info}</p>}
         {error && <p className="text-red-600 text-sm mb-4">{error}</p>}
 
         {mode === 'login' ? (
           <form onSubmit={handleLogin} className="space-y-4">
             <label className="block">
               <span className="block text-sm mb-1">Email</span>
-              <input type="email" name="email" required className="w-full border border-efn-gray px-4 py-3" />
+              <input type="email" name="email" required autoComplete="email" className="w-full border border-efn-gray px-4 py-3" />
             </label>
-            <label className="block">
-              <span className="block text-sm mb-1">Password</span>
-              <input type="password" name="password" required className="w-full border border-efn-gray px-4 py-3" />
-            </label>
+            <PasswordField name="password" label="Password" required autoComplete="current-password" />
             <button type="submit" disabled={busy} className="btn-solid w-full">{busy ? '…' : 'Sign In'}</button>
           </form>
         ) : (
@@ -105,12 +109,9 @@ export function AdminLogin() {
             </label>
             <label className="block">
               <span className="block text-sm mb-1">Email</span>
-              <input type="email" name="email" required className="w-full border border-efn-gray px-4 py-3" />
+              <input type="email" name="email" required autoComplete="email" className="w-full border border-efn-gray px-4 py-3" />
             </label>
-            <label className="block">
-              <span className="block text-sm mb-1">Password</span>
-              <input type="password" name="password" required minLength={6} className="w-full border border-efn-gray px-4 py-3" />
-            </label>
+            <PasswordField name="password" label="Password" required minLength={6} autoComplete="new-password" />
             <button type="submit" disabled={busy} className="btn-solid w-full">{busy ? '…' : 'Claim Owner Account'}</button>
           </form>
         )}

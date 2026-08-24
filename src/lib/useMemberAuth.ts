@@ -17,8 +17,22 @@ export function useMemberAuth() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     setUser(user);
+
     if (user) {
-      const { data } = await supabase.from('members').select('id, phone, name').eq('id', user.id).maybeSingle();
+      let { data } = await supabase.from('members').select('id, phone, name').eq('id', user.id).maybeSingle();
+
+      // Self-heal: a user can exist (post-confirmation sign-in) with no
+      // members row yet, if signup happened while email confirmation was
+      // pending — see ensure_member_profile in 0006. name/phone were
+      // captured at signup time into auth user_metadata for exactly this.
+      if (!data) {
+        const meta = user.user_metadata as { name?: string; phone?: string } | null;
+        if (meta?.name && meta?.phone) {
+          await supabase.rpc('ensure_member_profile', { member_name: meta.name, member_phone: meta.phone });
+          ({ data } = await supabase.from('members').select('id, phone, name').eq('id', user.id).maybeSingle());
+        }
+      }
+
       setMember(data as MemberProfile | null);
     } else {
       setMember(null);

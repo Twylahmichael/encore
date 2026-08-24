@@ -1,12 +1,32 @@
 import { useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 export function Contacts() {
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: wire to Supabase `contact_messages` table (see supabase/migrations).
+    setSubmitting(true);
+    setError('');
+    const form = new FormData(e.currentTarget);
+
+    const { error } = await supabase.from('contact_messages').insert({
+      first_name: String(form.get('firstName')),
+      last_name: String(form.get('lastName')),
+      email: String(form.get('email')),
+      message: String(form.get('message')),
+    });
+
+    if (error) {
+      setError('Could not send — please try again, or reach us on WhatsApp/phone.');
+      setSubmitting(false);
+      return;
+    }
+
     setSubmitted(true);
+    setSubmitting(false);
   };
 
   return (
@@ -39,7 +59,10 @@ export function Contacts() {
                   <span className="block text-sm mb-1">Your Message</span>
                   <textarea name="message" required rows={5} className="w-full border border-efn-gray px-4 py-3" />
                 </label>
-                <button type="submit" className="btn-solid">Submit Form</button>
+                {error && <p className="text-red-600 text-sm">{error}</p>}
+                <button type="submit" disabled={submitting} className="btn-solid">
+                  {submitting ? '…' : 'Submit Form'}
+                </button>
               </form>
             )}
           </div>

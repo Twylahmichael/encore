@@ -8,7 +8,7 @@ export function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
   const product = products.find((p) => p.slug === slug);
   const details = slug ? productDescriptions[slug] : undefined;
-  const { add } = useCart();
+  const { add, priceFor } = useCart();
   const [added, setAdded] = useState(false);
   const [qty, setQty] = useState(1);
 
@@ -41,7 +41,7 @@ export function ProductDetail() {
               />
             )}
             <p className="text-2xl text-efn-green font-semibold mb-2">
-              KShs {product.priceKes.toLocaleString('en-KE', { minimumFractionDigits: 2 })}
+              KShs {priceFor(product).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
             </p>
             {details?.stock && <p className="text-sm text-efn-black/60 mb-6">{details.stock}</p>}
 

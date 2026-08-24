@@ -18,6 +18,12 @@ import { ScheduleManager } from './pages/admin/ScheduleManager';
 import { ContentManager } from './pages/admin/ContentManager';
 import { BookingsView } from './pages/admin/BookingsView';
 import { AuditLog } from './pages/admin/AuditLog';
+import { Sales } from './pages/admin/Sales';
+import { Revenue } from './pages/admin/Revenue';
+import { Marketing } from './pages/admin/Marketing';
+import { Users } from './pages/admin/Users';
+import { Support } from './pages/admin/Support';
+import { Pricing } from './pages/admin/Pricing';
 import { PortalLayout } from './pages/portal/PortalLayout';
 import { MyCalendar } from './pages/portal/MyCalendar';
 import { BookClass } from './pages/portal/BookClass';
@@ -47,6 +53,12 @@ export function App() {
                   <Route path="schedule" element={<ScheduleManager />} />
                   <Route path="content" element={<ContentManager />} />
                   <Route path="bookings" element={<BookingsView />} />
+                  <Route path="sales" element={<Sales />} />
+                  <Route path="revenue" element={<Revenue />} />
+                  <Route path="marketing" element={<Marketing />} />
+                  <Route path="users" element={<Users />} />
+                  <Route path="support" element={<Support />} />
+                  <Route path="pricing" element={<Pricing />} />
                   <Route path="audit" element={<AuditLog />} />
                 </Route>
 

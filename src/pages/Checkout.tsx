@@ -10,15 +10,47 @@ import { supabase } from '../lib/supabase';
 // "pending_payment" and shows an M-Pesa-style manual instruction, matching
 // how a small Kenyan shop actually collects payment.
 export function Checkout() {
-  const { lines, subtotalKes, clear } = useCart();
+  const { lines, subtotalKes, clear, priceFor } = useCart();
   const items = cartLineProducts(lines);
   const [submitting, setSubmitting] = useState(false);
   const [orderRef, setOrderRef] = useState<string | null>(null);
   const [error, setError] = useState('');
 
+  const [discountCode, setDiscountCode] = useState('');
+  const [discountKes, setDiscountKes] = useState(0);
+  const [discountMessage, setDiscountMessage] = useState('');
+  const [checkingCode, setCheckingCode] = useState(false);
+
   if (items.length === 0 && !orderRef) {
     return <Navigate to="/cart" replace />;
   }
+
+  const total = Math.max(0, subtotalKes - discountKes);
+
+  const applyDiscountCode = async () => {
+    const code = discountCode.trim();
+    if (!code) return;
+    setCheckingCode(true);
+    setDiscountMessage('');
+    const { data, error } = await supabase
+      .from('discount_codes')
+      .select('code, percent_off, amount_off_kes')
+      .eq('code', code)
+      .maybeSingle();
+    // RLS already scopes reads to active, non-expired codes — a missing
+    // row means invalid/expired/inactive, not necessarily "never existed".
+    if (error || !data) {
+      setDiscountKes(0);
+      setDiscountMessage('That code isn’t valid or has expired.');
+    } else {
+      const amount = data.percent_off != null
+        ? Math.round(subtotalKes * (Number(data.percent_off) / 100))
+        : Number(data.amount_off_kes);
+      setDiscountKes(amount);
+      setDiscountMessage(`Code applied — KShs ${amount.toLocaleString('en-KE')} off.`);
+    }
+    setCheckingCode(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -33,7 +65,10 @@ export function Checkout() {
         customer_email: String(form.get('email')),
         customer_phone: String(form.get('phone')),
         shipping_address: String(form.get('address')),
-        subtotal_kes: subtotalKes,
+        subtotal_kes: total,
+        payment_method: String(form.get('payment_method')),
+        discount_code: discountKes > 0 ? discountCode.trim() : null,
+        discount_amount_kes: discountKes,
         status: 'pending_payment',
       })
       .select('id')
@@ -49,7 +84,7 @@ export function Checkout() {
       order_id: order.id,
       product_slug: product.slug,
       product_name: product.name,
-      unit_price_kes: product.priceKes,
+      unit_price_kes: priceFor(product),
       quantity,
     }));
 
@@ -72,7 +107,7 @@ export function Checkout() {
           <h1 className="text-3xl mb-4">Order Received</h1>
           <p className="text-efn-black/70 mb-2">Order reference: <span className="font-mono">{orderRef}</span></p>
           <p className="text-efn-black/70 mb-8">
-            We'll be in touch on WhatsApp/phone to confirm your order and arrange M-Pesa payment.
+            We'll be in touch on WhatsApp/phone to confirm your order and arrange payment.
           </p>
           <Link to="/our-products" className="btn-solid inline-block">Continue Shopping</Link>
         </div>
@@ -102,26 +137,61 @@ export function Checkout() {
               <span className="block text-sm mb-1">Delivery Address</span>
               <textarea name="address" required rows={3} className="w-full border border-efn-gray px-4 py-3" />
             </label>
+            <label className="block">
+              <span className="block text-sm mb-1">Payment Method</span>
+              <select name="payment_method" defaultValue="mpesa" className="w-full border border-efn-gray px-4 py-3">
+                <option value="mpesa">M-Pesa</option>
+                <option value="cash">Cash</option>
+              </select>
+            </label>
             {error && <p className="text-red-600 text-sm">{error}</p>}
             <button type="submit" disabled={submitting} className="btn-solid w-full">
-              {submitting ? 'Placing order…' : `Place Order — KShs ${subtotalKes.toLocaleString('en-KE')}`}
+              {submitting ? 'Placing order…' : `Place Order — KShs ${total.toLocaleString('en-KE')}`}
             </button>
           </form>
         </div>
 
         <div>
           <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-          <div className="space-y-3">
+          <div className="space-y-3 mb-4">
             {items.map(({ product, quantity }) => (
               <div key={product.slug} className="flex justify-between text-sm">
                 <span>{product.name} × {quantity}</span>
-                <span>KShs {(product.priceKes * quantity).toLocaleString('en-KE')}</span>
+                <span>KShs {(priceFor(product) * quantity).toLocaleString('en-KE')}</span>
               </div>
             ))}
           </div>
-          <div className="flex justify-between pt-4 mt-4 border-t border-efn-gray/30 font-semibold">
-            <span>Total</span>
-            <span>KShs {subtotalKes.toLocaleString('en-KE', { minimumFractionDigits: 2 })}</span>
+
+          <div className="flex gap-2 mb-4">
+            <input
+              value={discountCode}
+              onChange={(e) => setDiscountCode(e.target.value)}
+              placeholder="Discount code"
+              className="flex-1 border border-efn-gray px-3 py-2 text-sm"
+            />
+            <button type="button" onClick={applyDiscountCode} disabled={checkingCode || !discountCode.trim()} className="btn-outline-dark text-sm px-4">
+              {checkingCode ? '…' : 'Apply'}
+            </button>
+          </div>
+          {discountMessage && (
+            <p className={`text-sm mb-4 ${discountKes > 0 ? 'text-efn-green' : 'text-red-600'}`}>{discountMessage}</p>
+          )}
+
+          <div className="space-y-1 pt-4 border-t border-efn-gray/30">
+            <div className="flex justify-between text-sm text-efn-black/60">
+              <span>Subtotal</span>
+              <span>KShs {subtotalKes.toLocaleString('en-KE', { minimumFractionDigits: 2 })}</span>
+            </div>
+            {discountKes > 0 && (
+              <div className="flex justify-between text-sm text-efn-green">
+                <span>Discount</span>
+                <span>−KShs {discountKes.toLocaleString('en-KE')}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-semibold text-lg pt-1">
+              <span>Total</span>
+              <span>KShs {total.toLocaleString('en-KE', { minimumFractionDigits: 2 })}</span>
+            </div>
           </div>
         </div>
       </div>

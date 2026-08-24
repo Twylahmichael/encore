@@ -1,6 +1,8 @@
 import type { Product } from '../data/products';
+import { useCart } from '../lib/cartStore';
 
 export function ProductCard({ product }: { product: Product }) {
+  const { priceFor } = useCart();
   return (
     <a href={`/product/${product.slug}`} className="group block">
       <div className="aspect-square bg-efn-offwhite overflow-hidden mb-4">
@@ -14,7 +16,7 @@ export function ProductCard({ product }: { product: Product }) {
         {product.name}
       </h3>
       <p className="text-efn-green font-semibold">
-        KShs {product.priceKes.toLocaleString('en-KE', { minimumFractionDigits: 2 })}
+        KShs {priceFor(product).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
       </p>
     </a>
   );

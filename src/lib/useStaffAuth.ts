@@ -19,7 +19,21 @@ export function useStaffAuth() {
     setUser(user);
 
     if (user) {
-      const { data } = await supabase.from('staff_profiles').select('id, role, name').eq('id', user.id).maybeSingle();
+      let { data } = await supabase.from('staff_profiles').select('id, role, name').eq('id', user.id).maybeSingle();
+
+      // Self-heal: a user can exist (post-confirmation sign-in) with no
+      // staff_profiles row yet if signup happened while email confirmation
+      // was pending — see claim_first_owner in 0006. Safe to call on every
+      // refresh: it only ever inserts when staff_profiles is empty, and
+      // only for the caller's own id, so it's a no-op once an owner exists.
+      if (!data) {
+        const name = (user.user_metadata as { name?: string } | null)?.name ?? user.email ?? 'Owner';
+        const { data: claimed } = await supabase.rpc('claim_first_owner', { owner_name: name });
+        if (claimed) {
+          ({ data } = await supabase.from('staff_profiles').select('id, role, name').eq('id', user.id).maybeSingle());
+        }
+      }
+
       setProfile(data as StaffProfile | null);
     } else {
       setProfile(null);

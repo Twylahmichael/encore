@@ -5,7 +5,7 @@ import { useCart, cartLineProducts } from '../lib/cartStore';
 // checkout) — not a WooCommerce clone. The live site's actual cart/checkout
 // is WooCommerce and this doesn't touch it; see docs/COMPARISON.md.
 export function Cart() {
-  const { lines, setQuantity, remove, subtotalKes } = useCart();
+  const { lines, setQuantity, remove, subtotalKes, priceFor } = useCart();
   const items = cartLineProducts(lines);
 
   if (items.length === 0) {
@@ -44,7 +44,7 @@ export function Cart() {
                       <span>{product.name}</span>
                     </Link>
                   </td>
-                  <td className="py-4">KShs {product.priceKes.toLocaleString('en-KE')}</td>
+                  <td className="py-4">KShs {priceFor(product).toLocaleString('en-KE')}</td>
                   <td className="py-4">
                     <input
                       type="number"
@@ -54,7 +54,7 @@ export function Cart() {
                       className="w-16 border border-efn-gray px-2 py-1"
                     />
                   </td>
-                  <td className="py-4">KShs {(product.priceKes * quantity).toLocaleString('en-KE')}</td>
+                  <td className="py-4">KShs {(priceFor(product) * quantity).toLocaleString('en-KE')}</td>
                   <td className="py-4">
                     <button onClick={() => remove(product.slug)} className="text-efn-black/50 hover:text-efn-green" aria-label={`Remove ${product.name}`}>
                       ×

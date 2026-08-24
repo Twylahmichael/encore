@@ -46,14 +46,33 @@ See `docs/COMPARISON.md` for the full page-by-page comparison against the live s
 
 ## Architecture carried forward from the Encore proposal
 
-- `supabase/migrations/` — `0001_init.sql` (coaches, class_slots, events, gallery_items, members, bookings, settings, audit_log, contact_messages, membership_signups), `0002_shop_and_portal.sql` (orders, order_items, member/staff self-signup policies), `0003_harden_functions.sql` (pins `search_path` on the two `SECURITY DEFINER` helper functions per Supabase's own security advisor).
+- `supabase/migrations/` — `0001_init.sql` (coaches, class_slots, events, gallery_items, members, bookings, settings, audit_log, contact_messages, membership_signups), `0002_shop_and_portal.sql` (orders, order_items, member/staff self-signup policies), `0003_harden_functions.sql` (pins `search_path` on `SECURITY DEFINER` functions), `0004`/`0005` (real coaches + schedule), `0006_fix_signup_profile_creation.sql` (moves profile-row creation to post-sign-in RPCs — see "Auth signup gotcha" below), `0007_finance_marketing_pricing.sql` (membership_plans, product_price_overrides, discount_codes, campaigns, orders.payment_method), `0008_add_staff_by_email.sql`.
 - **Live project:** `encore` (ref `zeurcxetfvvktbfipucs`, `eu-west-1`, free tier). URL/anon key go in `.env` (see `.env.example`) — not committed.
 - **WhatsApp booking** — live, wired into the Fitness Studio schedule (`src/pages/FitnessStudio.tsx` + `src/lib/whatsapp.ts` + `src/lib/useSettings.ts`).
-- **Admin panel** (`/admin`) — real Supabase Auth, role-gated via `staff_profiles` (owner/staff), one-time self-bootstrap for the first owner. Dashboard, Schedule Manager (inline coach reassignment), Content Manager (events/coaches), Bookings View, Audit Log (read view only — no writer trigger yet).
+- **Admin panel** (`/admin`) — real Supabase Auth, role-gated via `staff_profiles` (owner/staff), one-time self-bootstrap for the first owner (via `claim_first_owner()` RPC, called post-sign-in — not right after signup, see 0006). Dashboard (real revenue/orders/bookings tiles), Schedule Manager (inline coach reassignment), Content Manager (events/coaches), Bookings, Sales, Revenue, Pricing (membership plans + product price overrides — DB-editable, no redeploy), Users (members + staff, loyalty points, add-staff-by-email), Marketing (discount codes + campaigns), Support (contact messages), Audit Log (read view only — no writer trigger yet).
 - **Member portal** (`/my-encore`) — real Supabase Auth (email+password; phone is stored as the identity field but isn't the login credential — no SMS provider configured for true phone-OTP). Calendar + book-a-class, enforced unique-per-session at the DB level.
 - **Cart/checkout** (`/cart`, `/checkout`) — real, but not WooCommerce: a client-side cart writing to this app's own `orders`/`order_items` tables, no payment gateway wired.
 
-See `docs/COMPARISON.md` for the full list of what's genuinely live vs. still a known gap (audit-log writer, gallery upload UI, payment gateway).
+See `docs/COMPARISON.md` for the full list of what's genuinely live vs. still a known gap (audit-log writer, gallery upload UI, payment gateway, no auto-accrued loyalty points).
+
+### Auth signup gotcha — don't insert right after `signUp()`
+
+`supabase.auth.signUp()` only grants a session immediately if email
+confirmation is off. If it's on (the Supabase default, and this project's
+default until manually toggled off in the dashboard), there's no session
+until the user confirms + signs in — so `auth.uid()` is null and any RLS
+insert policy correctly rejects a write right after signup. Discovered the
+hard way (2026-08-24): the original owner-bootstrap and member-signup flows
+both inserted immediately post-`signUp()` and silently failed under RLS.
+
+**Pattern used everywhere now**: capture whatever's needed (name, phone) via
+`signUp({ options: { data: {...} } })` into `user_metadata`, then create the
+profile row via a `SECURITY DEFINER` RPC (`claim_first_owner`,
+`ensure_member_profile`) called from `useStaffAuth`/`useMemberAuth`'s
+`refresh()` — which runs on every sign-in, so it self-heals regardless of
+whether confirmation was on or off at signup time. Follow this pattern for
+any new self-service signup flow — don't `.from(table).insert(...)` right
+after `signUp()`.
 
 ## Deploy — GitHub Pages
 

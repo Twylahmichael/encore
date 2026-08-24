@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ProductCard } from '../components/ProductCard';
 import { products as allProducts } from '../data/products';
+import { useCart } from '../lib/cartStore';
 
 type SortKey = 'default' | 'popularity' | 'rating' | 'latest' | 'price-asc' | 'price-desc';
 
@@ -15,13 +16,14 @@ const sortOptions: { value: SortKey; label: string }[] = [
 
 export function OurProducts() {
   const [sort, setSort] = useState<SortKey>('default');
+  const { priceFor } = useCart();
 
   // Popularity / rating / latest have no signal in this static replica —
   // they're wired as no-ops (same order as default) until the real
   // WooCommerce data (sales count, ratings, publish date) is synced in.
   const sorted = [...allProducts].sort((a, b) => {
-    if (sort === 'price-asc') return a.priceKes - b.priceKes;
-    if (sort === 'price-desc') return b.priceKes - a.priceKes;
+    if (sort === 'price-asc') return priceFor(a) - priceFor(b);
+    if (sort === 'price-desc') return priceFor(b) - priceFor(a);
     return 0;
   });
 

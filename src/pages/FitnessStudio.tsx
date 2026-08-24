@@ -1,7 +1,7 @@
 import { WhyChooseEncore } from '../components/WhyChooseEncore';
 import { JoinEncoreFamily } from '../components/JoinEncoreFamily';
 import { useMembershipModal } from '../components/MembershipSignupModal';
-import { membershipPlans } from '../data/membershipPlans';
+import { useMembershipPlans } from '../lib/useMembershipPlans';
 import { useLiveSchedule } from '../lib/useLiveSchedule';
 import { useSettings } from '../lib/useSettings';
 import { whatsappBookingHref } from '../lib/whatsapp';
@@ -14,6 +14,7 @@ export function FitnessStudio() {
   const { open } = useMembershipModal();
   const settings = useSettings();
   const { days: schedule } = useLiveSchedule();
+  const { plans: membershipPlans } = useMembershipPlans();
 
   return (
     <>

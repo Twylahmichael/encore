@@ -1,5 +1,6 @@
 import { useState, createContext, useContext, type ReactNode } from 'react';
-import { membershipPlans } from '../data/membershipPlans';
+import { useMembershipPlans } from '../lib/useMembershipPlans';
+import { supabase } from '../lib/supabase';
 
 // Site-wide popup — sampled from the "Membership Signup" firebox popup that
 // appears on every page of efn.co.ke. Fields exactly as on the live form:
@@ -39,12 +40,32 @@ export function MembershipModalProvider({ children }: { children: ReactNode }) {
 }
 
 function MembershipModal({ initialPlan, onClose }: { initialPlan?: string; onClose: () => void }) {
+  const { plans: membershipPlans } = useMembershipPlans();
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: wire to Supabase `membership_signups` table (see supabase/migrations).
+    setSubmitting(true);
+    setError('');
+    const form = new FormData(e.currentTarget);
+
+    const { error } = await supabase.from('membership_signups').insert({
+      plan_id: String(form.get('plan')),
+      first_name: String(form.get('firstName')),
+      email: String(form.get('email')),
+      phone: String(form.get('phone')),
+    });
+
+    if (error) {
+      setError('Could not submit — please try again, or reach us on the Contacts page.');
+      setSubmitting(false);
+      return;
+    }
+
     setSubmitted(true);
+    setSubmitting(false);
   };
 
   return (
@@ -92,7 +113,10 @@ function MembershipModal({ initialPlan, onClose }: { initialPlan?: string; onClo
               <span className="block text-sm mb-1">Phone Number</span>
               <input type="tel" name="phone" required className="w-full border border-efn-gray px-4 py-3" />
             </label>
-            <button type="submit" className="btn-solid w-full text-center">Submit Form</button>
+            {error && <p className="text-red-600 text-sm">{error}</p>}
+            <button type="submit" disabled={submitting} className="btn-solid w-full text-center">
+              {submitting ? '…' : 'Submit Form'}
+            </button>
           </form>
         )}
       </div>

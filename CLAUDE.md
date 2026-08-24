@@ -55,6 +55,24 @@ See `docs/COMPARISON.md` for the full page-by-page comparison against the live s
 
 See `docs/COMPARISON.md` for the full list of what's genuinely live vs. still a known gap (audit-log writer, gallery upload UI, payment gateway).
 
+## Deploy — GitHub Pages
+
+`.github/workflows/deploy-pages.yml` builds and deploys on every push to
+`main`. Live at `https://twylahmichael.github.io/encore/`.
+
+- `vite.config.ts` sets `base: '/encore/'` only when `GITHUB_PAGES=true` (set
+  by the workflow) — local dev and any other host stay at `base: '/'`.
+- `src/App.tsx`'s `BrowserRouter` reads `basename` from
+  `import.meta.env.BASE_URL` so routes resolve correctly under `/encore/`.
+- The workflow copies `dist/index.html` → `dist/404.html` after build — GitHub
+  Pages has no server-side rewrite, so a hard refresh on a deep link (e.g.
+  `/encore/admin/schedule`) needs `404.html` to serve the same app shell;
+  React Router then reads the real URL client-side.
+- `.env.production` is committed **intentionally** — it holds the Supabase
+  **anon** key only (a public, client-safe credential; RLS is what actually
+  gates access, not secrecy of this key). Never commit the `service_role`
+  key the same way.
+
 ## Standing rule — destructive changes to live data
 
 Never delete or modify a schedule slot (`class_slots`), class, or any record

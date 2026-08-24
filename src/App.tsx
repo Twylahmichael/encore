@@ -24,7 +24,7 @@ import { BookClass } from './pages/portal/BookClass';
 
 export function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <CartProvider>
         <MembershipModalProvider>
           <div className="flex flex-col min-h-screen">

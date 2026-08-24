@@ -46,8 +46,14 @@ See `docs/COMPARISON.md` for the full page-by-page comparison against the live s
 
 ## Architecture carried forward from the Encore proposal
 
-- `supabase/migrations/0001_init.sql` — coaches, class_slots, events, gallery_items, members, bookings (with RLS: public reads what's already public on the live site, members manage their own bookings, staff have full access via a `staff_profiles` role table), settings, audit_log, plus `contact_messages` / `membership_signups` to back this replica's two real forms.
-- WhatsApp booking, admin panel, and member portal are **not yet built out** in this pass — this pass is the visual replica plus the schema they'll sit on. See the original proposal docs (moved out of this repo's history — ask if you need them restored) for the admin panel / WhatsApp flow spec to build next.
+- `supabase/migrations/` — `0001_init.sql` (coaches, class_slots, events, gallery_items, members, bookings, settings, audit_log, contact_messages, membership_signups), `0002_shop_and_portal.sql` (orders, order_items, member/staff self-signup policies), `0003_harden_functions.sql` (pins `search_path` on the two `SECURITY DEFINER` helper functions per Supabase's own security advisor).
+- **Live project:** `encore` (ref `zeurcxetfvvktbfipucs`, `eu-west-1`, free tier). URL/anon key go in `.env` (see `.env.example`) — not committed.
+- **WhatsApp booking** — live, wired into the Fitness Studio schedule (`src/pages/FitnessStudio.tsx` + `src/lib/whatsapp.ts` + `src/lib/useSettings.ts`).
+- **Admin panel** (`/admin`) — real Supabase Auth, role-gated via `staff_profiles` (owner/staff), one-time self-bootstrap for the first owner. Dashboard, Schedule Manager (inline coach reassignment), Content Manager (events/coaches), Bookings View, Audit Log (read view only — no writer trigger yet).
+- **Member portal** (`/my-encore`) — real Supabase Auth (email+password; phone is stored as the identity field but isn't the login credential — no SMS provider configured for true phone-OTP). Calendar + book-a-class, enforced unique-per-session at the DB level.
+- **Cart/checkout** (`/cart`, `/checkout`) — real, but not WooCommerce: a client-side cart writing to this app's own `orders`/`order_items` tables, no payment gateway wired.
+
+See `docs/COMPARISON.md` for the full list of what's genuinely live vs. still a known gap (audit-log writer, gallery upload UI, payment gateway).
 
 ## Commands
 

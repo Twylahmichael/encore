@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 // Sampled from efn.co.ke's WooCommerce "My Account" page: Login / Sign Up
@@ -80,7 +81,8 @@ export function Login() {
             </label>
             <p className="text-xs text-efn-black/60">
               Your personal data will be used to support your experience throughout this website,
-              to manage access to your account, and for other purposes described in our privacy policy.
+              to manage access to your account, and for other purposes described in our{' '}
+              <Link to="/privacy-policy" className="underline hover:text-efn-green">privacy policy</Link>.
             </p>
             <button type="submit" className="btn-solid w-full text-center">Register</button>
           </form>

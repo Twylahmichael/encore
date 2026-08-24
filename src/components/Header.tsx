@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router-dom';
 import logo from '../assets/site/logo.png';
+import { useCart } from '../lib/cartStore';
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -11,6 +12,7 @@ const navLinks = [
 // Matches efn.co.ke's live Blocksy header exactly: logo left, centered nav,
 // search / login / cart icons right. Sticky, white background, black text.
 export function Header() {
+  const { subtotalKes } = useCart();
   return (
     <header className="sticky top-0 z-40 bg-efn-white border-b border-efn-offwhite">
       <div className="max-w-site mx-auto px-6 py-4 flex items-center justify-between gap-6">
@@ -36,10 +38,13 @@ export function Header() {
           <button aria-label="Search" className="hover:text-efn-green">
             <SearchIcon />
           </button>
+          {/* "My Encore" is a Phase 2 addition (member portal) — not on the
+              live site's real header, which only has Login/Search/Cart. */}
+          <Link to="/my-encore" className="hidden sm:inline hover:text-efn-green">My Encore</Link>
           <Link to="/login" className="hover:text-efn-green">Login</Link>
           <Link to="/cart" className="flex items-center gap-2 hover:text-efn-green">
             <CartIcon />
-            <span>KShs 0.00</span>
+            <span>KShs {subtotalKes.toLocaleString('en-KE', { minimumFractionDigits: 2 })}</span>
           </Link>
         </div>
       </div>

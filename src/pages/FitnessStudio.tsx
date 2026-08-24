@@ -3,10 +3,13 @@ import { JoinEncoreFamily } from '../components/JoinEncoreFamily';
 import { useMembershipModal } from '../components/MembershipSignupModal';
 import { membershipPlans } from '../data/membershipPlans';
 import { schedule } from '../data/schedule';
+import { useSettings } from '../lib/useSettings';
+import { whatsappBookingHref } from '../lib/whatsapp';
 import aboutHero from '../assets/site/About-Encore-fitness.jpg';
 
 export function FitnessStudio() {
   const { open } = useMembershipModal();
+  const settings = useSettings();
 
   return (
     <>
@@ -49,32 +52,41 @@ export function FitnessStudio() {
         </div>
       </section>
 
-      {/* Workout Schedule — static today; Phase 1 of the Encore proposal
-          replaces this table with a DB-backed board with WhatsApp booking. */}
+      {/* Workout Schedule — the live site's table is static HTML; this
+          version is tappable, matching Phase 1 of the Encore proposal:
+          each session opens WhatsApp pre-filled with class/day/time. */}
       <section className="bg-efn-offwhite py-20">
         <div className="max-w-site mx-auto px-6">
           <p className="text-efn-green font-semibold uppercase tracking-wide mb-2">Workout Schedule</p>
-          <h2 className="text-3xl md:text-4xl mb-12">Stay on Track, Stay Fit</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse min-w-[600px]">
-              <tbody>
-                {schedule.map((day) => (
-                  <tr key={day.day} className="border-b border-efn-gray/30">
-                    <td className="py-4 pr-6 font-semibold whitespace-nowrap align-top">{day.day}</td>
-                    <td className="py-4">
-                      {day.sessions.map((s) => (
-                        <div key={s.time} className="mb-1 last:mb-0">
-                          <span className="text-efn-black/60">{s.label ? `${s.label} (${s.time})` : s.time}</span>{' '}
-                          <span className="font-medium">{s.className}</span>
-                        </div>
-                      ))}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <h2 className="text-3xl md:text-4xl mb-4">Stay on Track, Stay Fit</h2>
+          <p className="text-sm text-efn-black/60 mb-12">Tap any class to book it on WhatsApp.</p>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {schedule.flatMap((day) =>
+              day.sessions.map((s) => (
+                <a
+                  key={`${day.day}-${s.time}`}
+                  href={whatsappBookingHref(settings['whatsapp.number'], settings['whatsapp.template'], {
+                    class: s.className,
+                    day: day.day,
+                    time: s.time,
+                  })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block bg-efn-white p-5 hover:shadow-md transition-shadow group"
+                >
+                  <p className="text-xs uppercase tracking-wide text-efn-green font-semibold mb-1">{day.day}</p>
+                  <p className="text-lg font-semibold mb-1">{s.className}</p>
+                  <p className="text-sm text-efn-black/60 mb-3">{s.label ? `${s.label} · ${s.time}` : s.time}</p>
+                  <span className="text-sm font-semibold text-efn-green group-hover:underline">
+                    Book on WhatsApp →
+                  </span>
+                </a>
+              )),
+            )}
           </div>
-          <p className="text-xs text-efn-black/50 mt-4">
+
+          <p className="text-xs text-efn-black/50 mt-6">
             Sunday is not listed on the live site's schedule — no Sunday sessions are currently published.
           </p>
         </div>

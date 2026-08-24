@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { MembershipModalProvider } from './components/MembershipSignupModal';
@@ -8,7 +8,6 @@ import { FitnessStudio } from './pages/FitnessStudio';
 import { OurProducts } from './pages/OurProducts';
 import { ProductDetail } from './pages/ProductDetail';
 import { Contacts } from './pages/Contacts';
-import { Login } from './pages/Login';
 import { Cart } from './pages/Cart';
 import { Checkout } from './pages/Checkout';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
@@ -27,6 +26,7 @@ import { Pricing } from './pages/admin/Pricing';
 import { PortalLayout } from './pages/portal/PortalLayout';
 import { MyCalendar } from './pages/portal/MyCalendar';
 import { BookClass } from './pages/portal/BookClass';
+import { Account } from './pages/portal/Account';
 
 export function App() {
   return (
@@ -42,7 +42,11 @@ export function App() {
                 <Route path="/our-products" element={<OurProducts />} />
                 <Route path="/product/:slug" element={<ProductDetail />} />
                 <Route path="/contacts" element={<Contacts />} />
-                <Route path="/login" element={<Login />} />
+                {/* Retired — the old /login page ("Signed in." and nothing
+                    else) had no real account view behind it. The portal
+                    (/my-encore) is the real one: calendar, bookings,
+                    subscription, and — for coach accounts — assigned classes. */}
+                <Route path="/login" element={<Navigate to="/my-encore" replace />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -66,6 +70,7 @@ export function App() {
                 <Route path="/my-encore" element={<PortalLayout />}>
                   <Route index element={<MyCalendar />} />
                   <Route path="book" element={<BookClass />} />
+                  <Route path="account" element={<Account />} />
                 </Route>
               </Routes>
             </main>

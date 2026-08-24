@@ -46,14 +46,42 @@ See `docs/COMPARISON.md` for the full page-by-page comparison against the live s
 
 ## Architecture carried forward from the Encore proposal
 
-- `supabase/migrations/` — `0001_init.sql` (coaches, class_slots, events, gallery_items, members, bookings, settings, audit_log, contact_messages, membership_signups), `0002_shop_and_portal.sql` (orders, order_items, member/staff self-signup policies), `0003_harden_functions.sql` (pins `search_path` on `SECURITY DEFINER` functions), `0004`/`0005` (real coaches + schedule), `0006_fix_signup_profile_creation.sql` (moves profile-row creation to post-sign-in RPCs — see "Auth signup gotcha" below), `0007_finance_marketing_pricing.sql` (membership_plans, product_price_overrides, discount_codes, campaigns, orders.payment_method), `0008_add_staff_by_email.sql`.
+- `supabase/migrations/` — `0001_init.sql` (coaches, class_slots, events, gallery_items, members, bookings, settings, audit_log, contact_messages, membership_signups), `0002_shop_and_portal.sql` (orders, order_items, member/staff self-signup policies), `0003_harden_functions.sql` (pins `search_path` on `SECURITY DEFINER` functions), `0004`/`0005` (real coaches + schedule), `0006_fix_signup_profile_creation.sql` (moves profile-row creation to post-sign-in RPCs — see "Auth signup gotcha" below), `0007_finance_marketing_pricing.sql` (membership_plans, product_price_overrides, discount_codes, campaigns, orders.payment_method), `0008_add_staff_by_email.sql`, `0009_till_number_weekly_pass.sql` (real M-Pesa Till + Weekly Pass, from the physical brochure), `0010_member_roles_and_plan.sql` (`members.role`/`coach_id`/`current_plan_id` — see "Account types" below).
 - **Live project:** `encore` (ref `zeurcxetfvvktbfipucs`, `eu-west-1`, free tier). URL/anon key go in `.env` (see `.env.example`) — not committed.
 - **WhatsApp booking** — live, wired into the Fitness Studio schedule (`src/pages/FitnessStudio.tsx` + `src/lib/whatsapp.ts` + `src/lib/useSettings.ts`).
 - **Admin panel** (`/admin`) — real Supabase Auth, role-gated via `staff_profiles` (owner/staff), one-time self-bootstrap for the first owner (via `claim_first_owner()` RPC, called post-sign-in — not right after signup, see 0006). Dashboard (real revenue/orders/bookings tiles), Schedule Manager (inline coach reassignment), Content Manager (events/coaches), Bookings, Sales, Revenue, Pricing (membership plans + product price overrides — DB-editable, no redeploy), Users (members + staff, loyalty points, add-staff-by-email), Marketing (discount codes + campaigns), Support (contact messages), Audit Log (read view only — no writer trigger yet).
-- **Member portal** (`/my-encore`) — real Supabase Auth (email+password; phone is stored as the identity field but isn't the login credential — no SMS provider configured for true phone-OTP). Calendar + book-a-class, enforced unique-per-session at the DB level.
-- **Cart/checkout** (`/cart`, `/checkout`) — real, but not WooCommerce: a client-side cart writing to this app's own `orders`/`order_items` tables, no payment gateway wired.
+- **Member portal** (`/my-encore`) — real Supabase Auth (email+password; phone is stored as the identity field but isn't the login credential — no SMS provider configured for true phone-OTP). Calendar + book-a-class + Account (`/my-encore/account` — see "Account types" below), enforced unique-per-session at the DB level.
+- **Cart/checkout** (`/cart`, `/checkout`) — real, but not WooCommerce: a client-side cart writing to this app's own `orders`/`order_items` tables, no payment gateway wired. Confirmation screen shows the M-Pesa Till number (from `settings`) when the M-Pesa payment method is chosen.
 
 See `docs/COMPARISON.md` for the full list of what's genuinely live vs. still a known gap (audit-log writer, gallery upload UI, payment gateway, no auto-accrued loyalty points).
+
+### Account types — member / coach / staff
+
+Three distinct account boundaries, don't conflate them:
+
+- **Member** (`members` table, `role = 'member'`, default) — regular portal
+  account. Signs in at `/my-encore`, sees their booking calendar and (if
+  staff have recorded one) their subscription plan on `/my-encore/account`.
+- **Coach** (`members` table, `role = 'coach'`, `coach_id` → `coaches.id`) —
+  still a portal account, not an admin account. A coach's job (sign in, see
+  their own assigned classes) is portal-level, so this is a `role` value on
+  `members`, not a row in `staff_profiles`. Set in the admin panel (Users →
+  Account Type + Linked Coach dropdowns) — there's no self-service way to
+  become a coach.
+- **Staff/Owner** (`staff_profiles` table, separate from `members` entirely)
+  — admin panel (`/admin`) access. A person can independently also have a
+  `members` row (e.g. an owner who also books classes) — the two tables
+  aren't mutually exclusive, they're separate privilege boundaries for
+  separate apps (`/admin` vs `/my-encore`).
+
+`current_plan_id` on `members` (→ `membership_plans.id`) records which plan
+a member is on, set manually by staff in Users — there's no automated
+payment link yet, so this reflects what staff collected in person / via
+M-Pesa, not a live subscription.
+
+The old `/login` page (a vestigial WooCommerce-replica page with no backing
+data model — just "Signed in." and nothing else) is retired; `/login` now
+redirects to `/my-encore`, the real portal.
 
 ### Auth signup gotcha — don't insert right after `signUp()`
 

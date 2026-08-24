@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useCart, cartLineProducts } from '../lib/cartStore';
 import { supabase } from '../lib/supabase';
+import { useSettings } from '../lib/useSettings';
 
 // Real checkout against this app's own Supabase `orders`/`order_items`
 // tables — not WooCommerce. No payment gateway is wired (the live site's
@@ -12,8 +13,11 @@ import { supabase } from '../lib/supabase';
 export function Checkout() {
   const { lines, subtotalKes, clear, priceFor } = useCart();
   const items = cartLineProducts(lines);
+  const settings = useSettings();
+  const till = settings['mpesa.till_number'];
   const [submitting, setSubmitting] = useState(false);
   const [orderRef, setOrderRef] = useState<string | null>(null);
+  const [paidByMpesa, setPaidByMpesa] = useState(true);
   const [error, setError] = useState('');
 
   const [discountCode, setDiscountCode] = useState('');
@@ -57,6 +61,8 @@ export function Checkout() {
     setSubmitting(true);
     setError('');
     const form = new FormData(e.currentTarget);
+    const paymentMethod = String(form.get('payment_method'));
+    setPaidByMpesa(paymentMethod === 'mpesa');
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -66,7 +72,7 @@ export function Checkout() {
         customer_phone: String(form.get('phone')),
         shipping_address: String(form.get('address')),
         subtotal_kes: total,
-        payment_method: String(form.get('payment_method')),
+        payment_method: paymentMethod,
         discount_code: discountKes > 0 ? discountCode.trim() : null,
         discount_amount_kes: discountKes,
         status: 'pending_payment',
@@ -106,9 +112,15 @@ export function Checkout() {
         <div className="max-w-site mx-auto px-6 max-w-lg text-center">
           <h1 className="text-3xl mb-4">Order Received</h1>
           <p className="text-efn-black/70 mb-2">Order reference: <span className="font-mono">{orderRef}</span></p>
-          <p className="text-efn-black/70 mb-8">
-            We'll be in touch on WhatsApp/phone to confirm your order and arrange payment.
-          </p>
+          {paidByMpesa && till ? (
+            <p className="text-efn-black/70 mb-8">
+              Pay via M-Pesa — <strong>Till No: {till}</strong> — then we'll confirm and get your order moving.
+            </p>
+          ) : (
+            <p className="text-efn-black/70 mb-8">
+              We'll be in touch on WhatsApp/phone to confirm your order and arrange payment.
+            </p>
+          )}
           <Link to="/our-products" className="btn-solid inline-block">Continue Shopping</Link>
         </div>
       </section>

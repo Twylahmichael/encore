@@ -39,9 +39,12 @@ export function Header() {
             <SearchIcon />
           </button>
           {/* "My Encore" is a Phase 2 addition (member portal) — not on the
-              live site's real header, which only has Login/Search/Cart. */}
-          <Link to="/my-encore" className="hidden sm:inline hover:text-efn-green">My Encore</Link>
-          <Link to="/login" className="hover:text-efn-green">Login</Link>
+              live site's real header, which only has Login/Search/Cart.
+              It replaces that generic "Login" link: the portal is a real,
+              working account page (calendar, bookings, subscription,
+              coach view) — the old /login page just said "Signed in." and
+              did nothing else, so it's retired (redirects here now). */}
+          <Link to="/my-encore" className="hover:text-efn-green">My Encore</Link>
           <Link to="/cart" className="flex items-center gap-2 hover:text-efn-green">
             <CartIcon />
             <span>KShs {subtotalKes.toLocaleString('en-KE', { minimumFractionDigits: 2 })}</span>

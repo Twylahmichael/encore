@@ -7,6 +7,9 @@ interface MemberRow {
   name: string;
   phone: string;
   loyalty_points: number;
+  role: 'member' | 'coach';
+  coach_id: string | null;
+  current_plan_id: string | null;
   created_at: string;
   active: boolean;
 }
@@ -16,23 +19,37 @@ interface StaffRow {
   role: 'owner' | 'staff';
   created_at: string;
 }
+interface CoachOption {
+  id: string;
+  name: string;
+}
+interface PlanOption {
+  id: string;
+  name: string;
+}
 
 export function Users() {
   const { profile } = useStaffAuth();
   const [members, setMembers] = useState<MemberRow[]>([]);
   const [staff, setStaff] = useState<StaffRow[]>([]);
+  const [coachOptions, setCoachOptions] = useState<CoachOption[]>([]);
+  const [planOptions, setPlanOptions] = useState<PlanOption[]>([]);
   const [editingPoints, setEditingPoints] = useState<Record<string, string>>({});
   const [newStaff, setNewStaff] = useState({ email: '', name: '', role: 'staff' });
   const [addStaffError, setAddStaffError] = useState('');
   const [addingStaff, setAddingStaff] = useState(false);
 
   const load = async () => {
-    const [{ data: memberData }, { data: staffData }] = await Promise.all([
-      supabase.from('members').select('id, name, phone, loyalty_points, created_at, active').order('created_at', { ascending: false }),
+    const [{ data: memberData }, { data: staffData }, { data: coachData }, { data: planData }] = await Promise.all([
+      supabase.from('members').select('id, name, phone, loyalty_points, role, coach_id, current_plan_id, created_at, active').order('created_at', { ascending: false }),
       supabase.from('staff_profiles').select('id, name, role, created_at').order('created_at'),
+      supabase.from('coaches').select('id, name').order('sort_order'),
+      supabase.from('membership_plans').select('id, name').order('sort_order'),
     ]);
     setMembers((memberData as MemberRow[]) ?? []);
     setStaff((staffData as StaffRow[]) ?? []);
+    setCoachOptions((coachData as CoachOption[]) ?? []);
+    setPlanOptions((planData as PlanOption[]) ?? []);
   };
 
   useEffect(() => { load(); }, []);
@@ -42,6 +59,27 @@ export function Users() {
     if (Number.isNaN(value)) return;
     await supabase.from('members').update({ loyalty_points: value }).eq('id', id);
     setEditingPoints((v) => { const next = { ...v }; delete next[id]; return next; });
+    await load();
+  };
+
+  // Switching a member to "Coach" doesn't itself pick which coach record
+  // they are — that's the separate "Linked Coach" dropdown. Switching back
+  // to "Member" clears the link, since a member account shouldn't carry a
+  // stale coach_id around.
+  const setRole = async (id: string, role: 'member' | 'coach') => {
+    const patch: { role: string; coach_id?: null } = { role };
+    if (role === 'member') patch.coach_id = null;
+    await supabase.from('members').update(patch).eq('id', id);
+    await load();
+  };
+
+  const setCoachLink = async (id: string, coachId: string) => {
+    await supabase.from('members').update({ coach_id: coachId || null }).eq('id', id);
+    await load();
+  };
+
+  const setPlan = async (id: string, planId: string) => {
+    await supabase.from('members').update({ current_plan_id: planId || null }).eq('id', id);
     await load();
   };
 
@@ -73,12 +111,14 @@ export function Users() {
       <section>
         <h2 className="font-semibold mb-4">Members ({members.length})</h2>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px] text-sm">
+          <table className="w-full min-w-[900px] text-sm">
             <thead>
               <tr className="text-left text-efn-black/60 border-b border-efn-gray/30">
                 <th className="py-2 pr-4">Name</th>
                 <th className="py-2 pr-4">Phone</th>
-                <th className="py-2 pr-4">Joined</th>
+                <th className="py-2 pr-4">Account Type</th>
+                <th className="py-2 pr-4">Linked Coach</th>
+                <th className="py-2 pr-4">Subscription</th>
                 <th className="py-2 pr-4">Loyalty Points</th>
               </tr>
             </thead>
@@ -87,7 +127,40 @@ export function Users() {
                 <tr key={m.id} className="border-b border-efn-gray/10">
                   <td className="py-2 pr-4">{m.name}</td>
                   <td className="py-2 pr-4">{m.phone}</td>
-                  <td className="py-2 pr-4">{new Date(m.created_at).toLocaleDateString()}</td>
+                  <td className="py-2 pr-4">
+                    <select
+                      value={m.role}
+                      onChange={(e) => setRole(m.id, e.target.value as 'member' | 'coach')}
+                      className="border border-efn-gray px-2 py-1"
+                    >
+                      <option value="member">Member</option>
+                      <option value="coach">Coach</option>
+                    </select>
+                  </td>
+                  <td className="py-2 pr-4">
+                    {m.role === 'coach' ? (
+                      <select
+                        value={m.coach_id ?? ''}
+                        onChange={(e) => setCoachLink(m.id, e.target.value)}
+                        className="border border-efn-gray px-2 py-1"
+                      >
+                        <option value="">— Not linked —</option>
+                        {coachOptions.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                    ) : (
+                      <span className="text-efn-black/40">—</span>
+                    )}
+                  </td>
+                  <td className="py-2 pr-4">
+                    <select
+                      value={m.current_plan_id ?? ''}
+                      onChange={(e) => setPlan(m.id, e.target.value)}
+                      className="border border-efn-gray px-2 py-1"
+                    >
+                      <option value="">— None on file —</option>
+                      {planOptions.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                  </td>
                   <td className="py-2 pr-4">
                     <div className="flex items-center gap-2">
                       <input
@@ -103,7 +176,7 @@ export function Users() {
                   </td>
                 </tr>
               ))}
-              {members.length === 0 && <tr><td colSpan={4} className="py-4 text-center text-efn-black/50">No members yet.</td></tr>}
+              {members.length === 0 && <tr><td colSpan={6} className="py-4 text-center text-efn-black/50">No members yet.</td></tr>}
             </tbody>
           </table>
         </div>
@@ -151,8 +224,8 @@ export function Users() {
           </form>
         )}
         <p className="text-xs text-efn-black/50 mt-3">
-          They need an existing account first (e.g. sign up via My Encore or the shop login) — this looks
-          up their account by email and grants staff/owner access, it doesn't create a new login.
+          They need an existing account first (sign up via My Encore) — this looks up their account by
+          email and grants staff/owner access, it doesn't create a new login.
         </p>
       </section>
     </div>

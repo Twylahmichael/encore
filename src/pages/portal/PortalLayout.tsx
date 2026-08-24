@@ -20,6 +20,7 @@ export function PortalLayout() {
           <nav className="flex gap-4 text-sm">
             <NavLink to="/my-encore" end className={({ isActive }) => isActive ? 'text-efn-green font-semibold' : ''}>My Calendar</NavLink>
             <NavLink to="/my-encore/book" className={({ isActive }) => isActive ? 'text-efn-green font-semibold' : ''}>Book a Class</NavLink>
+            <NavLink to="/my-encore/account" className={({ isActive }) => isActive ? 'text-efn-green font-semibold' : ''}>Account</NavLink>
             <button onClick={() => supabase.auth.signOut().then(refresh)} className="text-efn-black/60 hover:text-efn-black">Sign out</button>
           </nav>
         </div>

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { products } from '../data/products';
 import { productDescriptions } from '../data/productDescriptions';
 import { useCart } from '../lib/cartStore';
+import { ZoomableImage } from '../components/ZoomableImage';
 
 export function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -28,9 +29,7 @@ export function ProductDetail() {
         </nav>
 
         <div className="grid md:grid-cols-2 gap-12">
-          <div className="aspect-square bg-efn-offwhite">
-            <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-          </div>
+          <ZoomableImage src={product.image} alt={product.name} />
 
           <div>
             <h1 className="text-3xl md:text-4xl mb-4">{product.name}</h1>

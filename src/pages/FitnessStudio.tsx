@@ -2,14 +2,18 @@ import { WhyChooseEncore } from '../components/WhyChooseEncore';
 import { JoinEncoreFamily } from '../components/JoinEncoreFamily';
 import { useMembershipModal } from '../components/MembershipSignupModal';
 import { membershipPlans } from '../data/membershipPlans';
-import { schedule } from '../data/schedule';
+import { useLiveSchedule } from '../lib/useLiveSchedule';
 import { useSettings } from '../lib/useSettings';
 import { whatsappBookingHref } from '../lib/whatsapp';
 import aboutHero from '../assets/site/About-Encore-fitness.jpg';
+import gym2 from '../assets/site/Encore-gym-2.jpg';
+import aboutFitness2 from '../assets/site/About-Encore-fitness-2.jpg';
+import aboutFitness5 from '../assets/site/About-Encore-fitness-5.jpg';
 
 export function FitnessStudio() {
   const { open } = useMembershipModal();
   const settings = useSettings();
+  const { days: schedule } = useLiveSchedule();
 
   return (
     <>
@@ -33,6 +37,18 @@ export function FitnessStudio() {
           </p>
         </div>
       </section>
+
+      {/* Facility photo strip — placement for the two background images
+          referenced in the live site's compiled CSS but never confidently
+          mappable to a specific section (see docs/COMPARISON.md). Placed
+          here as a simple glimpse of the space between the hero and
+          Membership Plans; the other unused variants were dropped rather
+          than crowding the page with a section the live site doesn't have. */}
+      <div className="grid grid-cols-3 h-48 md:h-64">
+        <img src={gym2} alt="Encore Fitness Studio" className="w-full h-full object-cover" />
+        <img src={aboutFitness2} alt="Encore Fitness Studio" className="w-full h-full object-cover" />
+        <img src={aboutFitness5} alt="Encore Fitness Studio" className="w-full h-full object-cover" />
+      </div>
 
       {/* Membership Plans */}
       <section className="py-20" id="membership">
@@ -77,7 +93,8 @@ export function FitnessStudio() {
                 >
                   <p className="text-xs uppercase tracking-wide text-efn-green font-semibold mb-1">{day.day}</p>
                   <p className="text-lg font-semibold mb-1">{s.className}</p>
-                  <p className="text-sm text-efn-black/60 mb-3">{s.label ? `${s.label} · ${s.time}` : s.time}</p>
+                  <p className="text-sm text-efn-black/60 mb-1">{s.label ? `${s.label} · ${s.time}` : s.time}</p>
+                  {s.coachName && <p className="text-sm text-efn-black/60 mb-3">with {s.coachName}</p>}
                   <span className="text-sm font-semibold text-efn-green group-hover:underline">
                     Book on WhatsApp →
                   </span>

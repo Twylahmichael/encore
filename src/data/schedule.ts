@@ -8,6 +8,7 @@ export interface ScheduleSession {
   time: string;
   label: string; // "Morning" | "Evening" | a fixed time like "9am"
   className: string;
+  coachName?: string; // not on the live site — populated only by the live Supabase-backed schedule
 }
 
 export interface ScheduleDay {

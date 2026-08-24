@@ -1,61 +1,133 @@
-// FLAG: the live site's Privacy Policy is the unedited WordPress default
-// boilerplate — every section still says "Suggested text:" verbatim,
-// meaning nobody replaced it with the site's actual policy. Replicated
-// exactly as published (word-for-word) rather than "fixed," per the
-// instruction to flag rather than silently resolve inconsistencies.
+// Written 2026-08-23 to replace the live site's unedited WordPress default
+// privacy policy template (every section of the original still said
+// "Suggested text:" verbatim — nobody had customized it). This is a real,
+// Encore-specific policy covering what this app actually collects.
+//
+// This is not a substitute for legal review — it accurately describes what
+// the app does today, but Encore should have a lawyer confirm it before
+// treating it as final, particularly the data-retention and third-party
+// sections once a payment gateway and SMS provider are actually wired up.
 export function PrivacyPolicy() {
   return (
     <section className="py-16">
       <div className="max-w-site mx-auto px-6 max-w-3xl">
-        <h1 className="text-3xl md:text-4xl mb-4">Privacy Policy</h1>
-        <p className="text-sm text-efn-black/50 mb-10 bg-efn-offwhite p-4">
-          Note: this page is reproduced exactly as published on the live site — it is the
-          default WordPress privacy policy template, not yet customized for Encore Fitness
-          and Nutrition. Every "Suggested text" line below is boilerplate, verbatim.
-        </p>
+        <h1 className="text-3xl md:text-4xl mb-2">Privacy Policy</h1>
+        <p className="text-sm text-efn-black/50 mb-10">Last updated 23 August 2026.</p>
 
         <div className="space-y-8 text-efn-black/80">
           <div>
             <h2 className="text-xl font-semibold mb-2">Who we are</h2>
-            <p>Suggested text: Our website address is: https://efn.co.ke.</p>
+            <p>
+              This policy covers efn.co.ke and the Encore member portal and admin systems
+              operated by Encore Fitness and Nutrition, Nairobi. Questions about this policy or
+              your data can be sent through our <a href="/contacts" className="underline hover:text-efn-green">Contacts</a> page.
+            </p>
           </div>
+
           <div>
-            <h2 className="text-xl font-semibold mb-2">Comments</h2>
-            <p>Suggested text: When visitors leave comments on the site we collect the data shown in the comments form, and also the visitor's IP address and browser user agent string to help spam detection.</p>
-            <p>An anonymized string created from your email address (also called a hash) may be provided to the Gravatar service to see if you are using it. The Gravatar service privacy policy is available here: https://automattic.com/privacy/. After approval of your comment, your profile picture is visible to the public in the context of your comment.</p>
+            <h2 className="text-xl font-semibold mb-2">What we collect</h2>
+            <p className="mb-3">We collect different information depending on how you use the site:</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>
+                <strong>Contact form</strong> — first name, last name, email address, and the
+                message you send us.
+              </li>
+              <li>
+                <strong>Membership signup</strong> — the plan you're interested in, your first
+                name, email address, and phone number.
+              </li>
+              <li>
+                <strong>Product orders</strong> — your name, email, phone number, and delivery
+                address, plus the items and quantities in your order.
+              </li>
+              <li>
+                <strong>Member accounts</strong> (My Encore portal) — your name, phone number, and
+                email/password used to sign in, plus your class booking history.
+              </li>
+              <li>
+                <strong>Class bookings made over WhatsApp</strong> — when you tap "Book on
+                WhatsApp" from the schedule, your message (including your name and phone number,
+                if you share them) goes directly to Encore's WhatsApp number. We don't see or
+                store the content of that conversation ourselves — WhatsApp/Meta's own privacy
+                policy governs that message.
+              </li>
+            </ul>
           </div>
+
           <div>
-            <h2 className="text-xl font-semibold mb-2">Media</h2>
-            <p>Suggested text: If you upload images to the website, you should avoid uploading images with embedded location data (EXIF GPS) included. Visitors to the website can download and extract any location data from images on the website.</p>
+            <h2 className="text-xl font-semibold mb-2">How we use your phone number</h2>
+            <p>
+              Your phone number is used to identify you as a member, to contact you about a
+              booking or order, and — if you book a class via WhatsApp — to have that
+              conversation with you directly on WhatsApp. We don't sell or share your phone
+              number with third parties for marketing.
+            </p>
           </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Payments and M-Pesa</h2>
+            <p>
+              This site does not currently process card or M-Pesa payments automatically.
+              When you place an order, we record your order details and contact you (by phone or
+              WhatsApp) to confirm payment, typically via M-Pesa Till/Paybill. We do not store
+              your M-Pesa PIN, and we never ask for it — M-Pesa transactions happen directly
+              between you and Safaricom through your own phone. We keep a record of the M-Pesa
+              transaction reference you provide us, for reconciliation, but not your M-Pesa
+              account credentials.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-2">How long we keep your data</h2>
+            <p>
+              Order and booking records are kept for as long as needed for accounting and
+              customer service purposes. Contact form and membership signup submissions are kept
+              until we've responded and for a reasonable period after, in case you follow up.
+              If you delete your member account, we remove your profile information but may
+              retain anonymized booking records for scheduling/attendance statistics.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Who can see your data</h2>
+            <p>
+              Encore staff and owners with admin access can see bookings, orders, and contact/
+              membership submissions in order to run the studio and shop. We don't sell your data
+              or share it with advertisers. Our systems are hosted on Supabase (database/auth) —
+              see <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-efn-green">Supabase's privacy policy</a> for how they handle infrastructure-level data.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Your rights</h2>
+            <p className="mb-3">You can ask us to:</p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>See what personal data we hold about you</li>
+              <li>Correct inaccurate data</li>
+              <li>Delete your account and associated personal data (subject to records we're
+                legally required to keep, e.g. for tax/accounting)</li>
+              <li>Stop using your phone number/email for anything beyond fulfilling an active
+                booking or order</li>
+            </ul>
+            <p className="mt-3">
+              To exercise any of these, reach us via the <a href="/contacts" className="underline hover:text-efn-green">Contacts</a> page.
+            </p>
+          </div>
+
           <div>
             <h2 className="text-xl font-semibold mb-2">Cookies</h2>
-            <p>Suggested text: If you leave a comment on our site you may opt-in to saving your name, email address and website in cookies. These are for your convenience so that you do not have to fill in your details again when you leave another comment. These cookies will last for one year.</p>
-            <p>If you visit our login page, we will set a temporary cookie to determine if your browser accepts cookies. This cookie contains no personal data and is discarded when you close your browser.</p>
-            <p>When you log in, we will also set up several cookies to save your login information and your screen display choices. Login cookies last for two days, and screen options cookies last for a year. If you select "Remember Me", your login will persist for two weeks. If you log out of your account, the login cookies will be removed.</p>
-            <p>If you edit or publish an article, an additional cookie will be saved in your browser. This cookie includes no personal data and simply indicates the post ID of the article you just edited. It expires after 1 day.</p>
+            <p>
+              The member portal and admin panel use a session cookie/local browser storage to
+              keep you signed in. We don't use tracking or advertising cookies.
+            </p>
           </div>
+
           <div>
-            <h2 className="text-xl font-semibold mb-2">Embedded content from other websites</h2>
-            <p>Suggested text: Articles on this site may include embedded content (e.g. videos, images, articles, etc.). Embedded content from other websites behaves in the exact same way as if the visitor has visited the other website.</p>
-            <p>These websites may collect data about you, use cookies, embed additional third-party tracking, and monitor your interaction with that embedded content, including tracking your interaction with the embedded content if you have an account and are logged in to that website.</p>
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Who we share your data with</h2>
-            <p>Suggested text: If you request a password reset, your IP address will be included in the reset email.</p>
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold mb-2">How long we retain your data</h2>
-            <p>Suggested text: If you leave a comment, the comment and its metadata are retained indefinitely. This is so we can recognize and approve any follow-up comments automatically instead of holding them in a moderation queue.</p>
-            <p>For users that register on our website (if any), we also store the personal information they provide in their user profile. All users can see, edit, or delete their personal information at any time (except they cannot change their username). Website administrators can also see and edit that information.</p>
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold mb-2">What rights you have over your data</h2>
-            <p>Suggested text: If you have an account on this site, or have left comments, you can request to receive an exported file of the personal data we hold about you, including any data you have provided to us. You can also request that we erase any personal data we hold about you. This does not include any data we are obliged to keep for administrative, legal, or security purposes.</p>
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Where your data is sent</h2>
-            <p>Suggested text: Visitor comments may be checked through an automated spam detection service.</p>
+            <h2 className="text-xl font-semibold mb-2">Changes to this policy</h2>
+            <p>
+              If how we handle your data changes materially — for example, if we add a payment
+              gateway or SMS provider — we'll update this page and the "Last updated" date above.
+            </p>
           </div>
         </div>
       </div>

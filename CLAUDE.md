@@ -55,6 +55,22 @@ See `docs/COMPARISON.md` for the full page-by-page comparison against the live s
 
 See `docs/COMPARISON.md` for the full list of what's genuinely live vs. still a known gap (audit-log writer, gallery upload UI, payment gateway).
 
+## Standing rule — destructive changes to live data
+
+Never delete or modify a schedule slot (`class_slots`), class, or any record
+that could have dependent live data (`bookings`, `orders`/`order_items`,
+etc.) without first **checking for and reporting** existing dependent
+records — e.g. before deleting a `class_slots` row, query `bookings` for
+that `slot_id` and state the count. Confirm with the user before deleting
+anything that has dependent data, **even if the change was explicitly
+requested** — an explicit instruction to change the parent record is not
+itself authorization to silently discard the dependent rows it would take
+with it.
+
+(Precedent: before deleting the old Saturday `Yoga/Boxing` slot on
+2026-08-24, `bookings` was queried and confirmed empty first — that check
+should happen and be reported every time, not only when convenient.)
+
 ## Commands
 
 ```bash

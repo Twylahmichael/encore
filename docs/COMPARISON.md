@@ -147,3 +147,45 @@ A photo of the physical Encore Fitness Studio brochure, plus a WhatsApp pricing 
 - **Weekday class schedule.** The brochure's printed weekday roster conflicts with the schedule the client explicitly dictated and confirmed in the fourth pass (now live in `class_slots`) — Mon/Tue PM classes appear swapped (Toning vs. Tae Combat), Wednesday is "Circuit" on the brochure vs. "CrossFit" as confirmed, Thursday PM is "Steps" vs. "CrossFit" as confirmed, Friday is "CrossFit/CrossFit" on the brochure vs. "Steps AM / Zumba PM" as confirmed, and Saturday shows two sessions on the brochure vs. the single confirmed "Boxing 9:00–10:00". Per the standing rule on changes to schedule data, this was surfaced as a question rather than silently resolved either way, even though zero bookings exist against any current slot (so it would have been safe to change). **Client's answer: keep the currently-set (fourth-pass) schedule** — the brochure is treated as outdated/superseded. No change made to `class_slots`.
 
 **Pricing not re-verified against the DB in this pass:** the WhatsApp message's daily/monthly/quarterly figures (400/4,000/10,500) were consistent with what was already seeded as Daily/Monthly/Quarterly plans, so no changes were needed there beyond the Weekly Pass addition above.
+
+## Seventh pass — hero product-image animation, and the ProductCard 404 bug
+
+Two unrelated things surfaced together and are both covered here.
+
+**Bug: product cards used a raw `<a href>` instead of a router `Link`.**
+`ProductCard.tsx` (and two links in `PrivacyPolicy.tsx`) used a plain
+`<a href="/product/<slug>">`. A plain `<a>` bypasses `BrowserRouter`'s
+`basename` entirely — under GitHub Pages (`base: '/encore/'`) this sent a
+full browser navigation straight to `twylahmichael.github.io/product/<slug>`,
+outside where the app is actually hosted, landing on GitHub's real "there
+isn't a Pages site here" 404 with no React app loaded at all. Reported as
+"I can't add a product to my cart" — there was no page there to add to a
+cart on. Fixed: both now use `Link`.
+
+**Hero product-image cluster, ported from the live site.** Client reported
+"where did that animation go" after seeing the live WordPress site
+(efn.co.ke) — confirmed with them this refers to that site, not a
+regression here; this app's Home page never had this feature (checked:
+no carousel/animation code existed anywhere in the codebase before this
+pass). On efn.co.ke, three product cutout PNGs sit below the hero heading
+in a row (`Encore-Homepage-Side-1.png`, `-Side-2.png` centered/scaled 1.1x
+on top via `z-index`, `-Centre.png` — the source site's own filename for
+the right-hand image, kept as-is rather than renamed for traceability).
+The two side images start offset outward (`translateX` ±200px desktop /
+±50px mobile) and slide inward as the row scrolls into view, via a
+page-level `<script>` using `IntersectionObserver` + a `scroll` listener
+computing progress from `getBoundingClientRect().top`. Ported into
+`src/components/HeroProductParallax.tsx` — same math, rewritten as a React
+effect over refs instead of `querySelectorAll` + class-name matching.
+Verified visually via a local Playwright screenshot before shipping: the
+converged cluster (green "Nutrition Geeks" pouch overlapping two flanking
+bottles) matches the client's screenshot of the live site.
+
+**Deliberately not changed:** the hero's background/text design (this
+app's hero uses `Encore-gym-1.jpg` as a full-bleed photo background; the
+live site's actual hero background is `Encore-gym-4.jpg` with a different
+overlay treatment — a pre-existing divergence from an earlier pass, not
+touched here since only the product-image animation was asked about). The
+live site's sticky-text-while-images-scroll-past layout (`position: sticky`
+on the text block) also wasn't replicated — only the two side images'
+convergent slide, which is what was visibly missing.

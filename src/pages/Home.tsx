@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { WhyChooseEncore } from '../components/WhyChooseEncore';
 import { JoinEncoreFamily } from '../components/JoinEncoreFamily';
 import { ProductCard } from '../components/ProductCard';
+import { HeroProductParallax } from '../components/HeroProductParallax';
 import { products, homepageFeaturedSlugs } from '../data/products';
 import gym1 from '../assets/site/Encore-gym-1.jpg';
 import gym4 from '../assets/site/Encore-gym-4.jpg';
@@ -14,9 +15,12 @@ export function Home() {
   return (
     <>
       {/* Hero — sampled: "Supercharge Your Every Day" over Encore-gym-1.jpg,
-          dark-to-transparent gradient overlay, two pill-style CTAs. */}
+          dark-to-transparent gradient overlay, two pill-style CTAs, plus
+          the live site's scroll-linked product-image cluster (see
+          HeroProductParallax.tsx) — overflow-hidden so its inward slide
+          never causes horizontal scroll. */}
       <section
-        className="relative bg-cover bg-top text-efn-white pt-36 pb-24"
+        className="relative overflow-hidden bg-cover bg-top text-efn-white pt-36 pb-24"
         style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.83) 100%), url(${gym1})` }}
       >
         <div className="max-w-site mx-auto px-6 text-center">
@@ -26,10 +30,11 @@ export function Home() {
           <p className="max-w-xl mx-auto text-lg mb-10 text-efn-white/90">
             From gym gains to daily wellness, we empower you to thrive every step of the way.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-4 mb-16">
             <Link to="/fitness-studio" className="btn-outline">Fitness</Link>
             <Link to="/our-products" className="btn-outline">Nutrition</Link>
           </div>
+          <HeroProductParallax />
         </div>
       </section>
 

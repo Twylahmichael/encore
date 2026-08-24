@@ -1,10 +1,18 @@
+import { Link } from 'react-router-dom';
 import type { Product } from '../data/products';
 import { useCart } from '../lib/cartStore';
 
+// Was a plain <a href>, not a router Link — that bypasses BrowserRouter's
+// basename entirely, so under GitHub Pages (base '/encore/') clicking a
+// product card did a full browser navigation straight to
+// twylahmichael.github.io/product/<slug> (no /encore/ prefix), which is
+// outside where this app is actually hosted → GitHub's real 404 page, no
+// React app loaded at all. That's what "can't add to cart" was: there was
+// no page there to add to a cart on.
 export function ProductCard({ product }: { product: Product }) {
   const { priceFor } = useCart();
   return (
-    <a href={`/product/${product.slug}`} className="group block">
+    <Link to={`/product/${product.slug}`} className="group block">
       <div className="aspect-square bg-efn-offwhite overflow-hidden mb-4">
         <img
           src={product.image}
@@ -18,6 +26,6 @@ export function ProductCard({ product }: { product: Product }) {
       <p className="text-efn-green font-semibold">
         KShs {priceFor(product).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
       </p>
-    </a>
+    </Link>
   );
 }

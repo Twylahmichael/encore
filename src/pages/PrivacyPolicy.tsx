@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 // Written 2026-08-23 to replace the live site's unedited WordPress default
 // privacy policy template (every section of the original still said
 // "Suggested text:" verbatim — nobody had customized it). This is a real,
@@ -20,7 +22,7 @@ export function PrivacyPolicy() {
             <p>
               This policy covers efn.co.ke and the Encore member portal and admin systems
               operated by Encore Fitness Studio, Nairobi. Questions about this policy or
-              your data can be sent through our <a href="/contacts" className="underline hover:text-efn-green">Contacts</a> page.
+              your data can be sent through our <Link to="/contacts" className="underline hover:text-efn-green">Contacts</Link> page.
             </p>
           </div>
 
@@ -110,7 +112,7 @@ export function PrivacyPolicy() {
                 booking or order</li>
             </ul>
             <p className="mt-3">
-              To exercise any of these, reach us via the <a href="/contacts" className="underline hover:text-efn-green">Contacts</a> page.
+              To exercise any of these, reach us via the <Link to="/contacts" className="underline hover:text-efn-green">Contacts</Link> page.
             </p>
           </div>
 

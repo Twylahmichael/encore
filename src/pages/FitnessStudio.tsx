@@ -94,7 +94,7 @@ export function FitnessStudio() {
                   <p className="text-xs uppercase tracking-wide text-efn-green font-semibold mb-1">{day.day}</p>
                   <p className="text-lg font-semibold mb-1">{s.className}</p>
                   <p className="text-sm text-efn-black/60 mb-1">{s.label ? `${s.label} · ${s.time}` : s.time}</p>
-                  {s.coachName && <p className="text-sm text-efn-black/60 mb-3">with {s.coachName}</p>}
+                  <p className="text-sm text-efn-black/60 mb-3">with {s.coachName ?? 'Coach TBD'}</p>
                   <span className="text-sm font-semibold text-efn-green group-hover:underline">
                     Book on WhatsApp →
                   </span>

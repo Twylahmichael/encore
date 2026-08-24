@@ -1,4 +1,8 @@
--- Seed data sampled verbatim from the live site on 2026-08-23.
+-- Seed data. Settings sampled verbatim from the live site (2026-08-23).
+-- Coaches and the weekly schedule reflect the real, current class roster
+-- as confirmed by the client (2026-08-24) — NOT what's scraped from the
+-- live WordPress site, which has no coach data and an older/stale class
+-- list (see docs/COMPARISON.md for the full before/after).
 -- Safe to re-run against a fresh database.
 
 insert into settings (key, value) values
@@ -9,19 +13,28 @@ insert into settings (key, value) values
   ('stats.daily_price_kes', '400')
 on conflict (key) do nothing;
 
--- Workout schedule — exact match to efn.co.ke/fitness-studio/ "Stay on Track, Stay Fit".
--- Coach is null throughout: the live site doesn't attribute a coach per session today.
-insert into class_slots (day_of_week, start_time, end_time, class_name) values
-  (1, '06:00', '07:00', 'Aerobics'),
-  (1, '18:00', '19:00', 'Hiit'),
-  (2, '06:00', '07:00', 'CrossFit'),
-  (2, '18:00', '19:00', 'Katabox'),
-  (3, '06:00', '07:00', 'Circuit'),
-  (3, '18:00', '19:00', 'Circuit'),
-  (4, '06:00', '07:00', 'Aerobics / Vitalis'),
-  (4, '18:00', '19:00', 'Steps'),
-  (5, '06:00', '07:00', 'Zumba'),
-  (5, '18:00', '19:00', 'CrossFit'),
-  (6, '09:00', '10:00', 'Bootcamp'),
-  (6, '11:00', '16:00', 'Yoga/Boxing')
+insert into coaches (name, specialty, sort_order) values
+  ('Coach Karis', 'Aerobics, Circuit & Yoga', 1),
+  ('Coach Ray', 'HIIT & Conditioning', 2),
+  ('Coach Ewid', 'CrossFit & Zumba', 3),
+  ('Coach Okeke', 'Katabox & CrossFit', 4),
+  ('Coach Vitalis', 'Aerobics', 5),
+  ('Coach Malik', 'Circuit Training & Bootcamp', 6)
+on conflict do nothing;
+
+-- Friday PM (Zumba) and Saturday (Boxing) are intentionally unassigned —
+-- staff fill these in weekly via the admin Schedule Manager. The UI shows
+-- "Coach TBD" for these, never blank.
+insert into class_slots (day_of_week, start_time, end_time, class_name, coach_id) values
+  (1, '06:00', '07:00', 'Aerobics',   (select id from coaches where name = 'Coach Karis')),
+  (1, '18:00', '19:00', 'Toning',     (select id from coaches where name = 'Coach Ewid')),
+  (2, '06:00', '07:00', 'CrossFit',   (select id from coaches where name = 'Coach Ray')),
+  (2, '18:00', '19:00', 'Taecombat',  (select id from coaches where name = 'Coach Okeke')),
+  (3, '06:00', '07:00', 'CrossFit',   (select id from coaches where name = 'Coach Ray')),
+  (3, '18:00', '19:00', 'CrossFit',   (select id from coaches where name = 'Coach Vitalis')),
+  (4, '06:00', '07:00', 'Aerosteps',  (select id from coaches where name = 'Coach Vitalis')),
+  (4, '18:00', '19:00', 'CrossFit',   (select id from coaches where name = 'Coach Ray')),
+  (5, '06:00', '07:00', 'Steps',      (select id from coaches where name = 'Coach Malik')),
+  (5, '18:00', '19:00', 'Zumba',      null),
+  (6, '09:00', '10:00', 'Boxing',     null)
 on conflict do nothing;

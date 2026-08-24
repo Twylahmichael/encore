@@ -84,7 +84,7 @@ export function BookClass() {
                 <p className="text-xs uppercase tracking-wide text-efn-green font-semibold mb-1">{DAYS[s.day_of_week]} · {sessionDate}</p>
                 <p className="text-lg font-semibold mb-1">{s.class_name}</p>
                 <p className="text-sm text-efn-black/60 mb-1">{s.start_time}–{s.end_time}</p>
-                <p className="text-sm text-efn-black/60 mb-4">{s.coaches?.name ?? 'Coach TBA'}</p>
+                <p className="text-sm text-efn-black/60 mb-4">{s.coaches?.name ?? 'Coach TBD'}</p>
                 <button onClick={() => book(s)} disabled={busyKey === key} className="btn-solid text-sm px-4 py-2">
                   {busyKey === key ? '…' : 'Book'}
                 </button>

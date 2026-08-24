@@ -7,7 +7,7 @@ export function PortalLayout() {
   const { user, member, loading, refresh } = useMemberAuth();
 
   if (loading) return <div className="py-16 text-center">Loading…</div>;
-  if (!user || !member) return <PortalLogin />;
+  if (!user || !member) return <PortalLogin refresh={refresh} />;
 
   return (
     <div>

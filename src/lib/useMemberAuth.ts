@@ -21,8 +21,15 @@ export function useMemberAuth() {
   const [member, setMember] = useState<MemberProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // `loading` covers only the very first resolution (are we signed in at
+  // all?) — deliberately NOT reset to true on later refreshes. Those fire
+  // on every Supabase auth event, including a spurious extra
+  // INITIAL_SESSION event supabase-js sends right after subscribing below
+  // (on top of the direct call), and re-arming `loading` there would
+  // briefly unmount PortalLogin (via PortalLayout's `if (loading)` guard)
+  // and wipe its local sign-in/sign-up tab state — the exact bug where
+  // pressing "Sign in" bounced back to "Create account".
   const refresh = async () => {
-    setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     setUser(user);
 

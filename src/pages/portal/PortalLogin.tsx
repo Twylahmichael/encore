@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useMemberAuth } from '../../lib/useMemberAuth';
 import { PasswordField } from '../../components/PasswordField';
 
 // Member signup/login — Phase 2 of the Encore proposal ("Member logins +
@@ -15,8 +14,12 @@ import { PasswordField } from '../../components/PasswordField';
 // signup time instead, and the row is created on the next successful
 // sign-in via useMemberAuth's self-heal (see supabase/migrations/
 // 0006_fix_signup_profile_creation.sql).
-export function PortalLogin() {
-  const { refresh } = useMemberAuth();
+// `refresh` comes from PortalLayout's own useMemberAuth() call rather than
+// this component creating a second instance — two independent hook
+// instances meant two onAuthStateChange subscriptions both firing refresh()
+// on every auth event, which was needless duplicate work (see useMemberAuth.ts
+// for the other half of this bug fix).
+export function PortalLogin({ refresh }: { refresh: () => Promise<void> }) {
   const [mode, setMode] = useState<'login' | 'signup'>('signup');
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');

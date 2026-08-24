@@ -13,8 +13,11 @@ export function useStaffAuth() {
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // `loading` covers only the very first resolution — see useMemberAuth.ts
+  // for why it's deliberately not reset to true on later refreshes (avoids
+  // an unmount-triggered reset of AdminLogin's local tab state on every
+  // background auth event).
   const refresh = async () => {
-    setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     setUser(user);
 

@@ -49,7 +49,7 @@ export function AdminLayout() {
   const { user, profile, loading, refresh } = useStaffAuth();
 
   if (loading) return <div className="py-16 text-center">Loading…</div>;
-  if (!user || !profile) return <AdminLogin />;
+  if (!user || !profile) return <AdminLogin refresh={refresh} />;
 
   return (
     <div className="grid md:grid-cols-[220px_1fr] min-h-[70vh]">

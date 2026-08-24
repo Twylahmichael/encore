@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { useStaffAuth } from '../../lib/useStaffAuth';
 import { PasswordField } from '../../components/PasswordField';
 
 // Staff/owner sign-in. There's no open signup: the FIRST person to
@@ -13,8 +12,10 @@ import { PasswordField } from '../../components/PasswordField';
 // session yet at that point, so it happens on the next successful sign-in
 // instead, via useStaffAuth's self-heal (see supabase/migrations/
 // 0006_fix_signup_profile_creation.sql for why).
-export function AdminLogin() {
-  const { refresh } = useStaffAuth();
+// `refresh` comes from AdminLayout's own useStaffAuth() call — see the
+// matching note in PortalLogin.tsx / useStaffAuth.ts for why this isn't a
+// second independent hook instance.
+export function AdminLogin({ refresh }: { refresh: () => Promise<void> }) {
   const [mode, setMode] = useState<'login' | 'bootstrap'>('login');
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');

@@ -83,6 +83,15 @@ The old `/login` page (a vestigial WooCommerce-replica page with no backing
 data model — just "Signed in." and nothing else) is retired; `/login` now
 redirects to `/my-encore`, the real portal.
 
+**Signed in but no `members` row** (e.g. an owner/staff account created via
+the admin bootstrap flow, which never captures name/phone) is a real,
+distinct state from "not signed in" — `PortalLayout` shows `CompleteProfile`
+(asks for name/phone, calls `ensure_member_profile` directly) rather than
+looping back to `PortalLogin`. Conflating the two (`if (!user || !member)
+return <PortalLogin/>`) was a real bug: a correct sign-in with such an
+account silently re-rendered the sign-in form with zero explanation —
+looked exactly like "I click Sign In and nothing happens."
+
 ### Auth signup gotcha — don't insert right after `signUp()`
 
 `supabase.auth.signUp()` only grants a session immediately if email

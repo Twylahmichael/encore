@@ -1,13 +1,20 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useMemberAuth } from '../../lib/useMemberAuth';
 import { PortalLogin } from './PortalLogin';
+import { CompleteProfile } from './CompleteProfile';
 import { supabase } from '../../lib/supabase';
 
 export function PortalLayout() {
   const { user, member, loading, refresh } = useMemberAuth();
 
   if (loading) return <div className="py-16 text-center">Loading…</div>;
-  if (!user || !member) return <PortalLogin refresh={refresh} />;
+  if (!user) return <PortalLogin refresh={refresh} />;
+  // Signed in, but no members row — e.g. a staff/owner account created via
+  // the admin bootstrap flow, which never captured name/phone. Distinct
+  // from "not signed in": looping back to PortalLogin here (as the old
+  // `!user || !member` check did) meant a correct sign-in silently went
+  // nowhere with zero explanation. See CompleteProfile.tsx.
+  if (!member) return <CompleteProfile refresh={refresh} />;
 
   return (
     <div>

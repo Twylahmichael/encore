@@ -1,6 +1,6 @@
 # Encore
 
-React + Supabase companion system for **[efn.co.ke](https://efn.co.ke)** (Encore Fitness and Nutrition, Nairobi) — a visual replica of the live WordPress/Elementor/Blocksy site, plus the booking/admin architecture from the Encore proposal (dynamic schedule, WhatsApp booking, member accounts).
+React + Supabase companion system for **[efn.co.ke](https://efn.co.ke)** (Encore Fitness Studio, Nairobi — brand name confirmed by the client 2026-08-24; the site's own metadata says "Encore Fitness and Nutrition," see `docs/COMPARISON.md`) — a visual replica of the live WordPress/Elementor/Blocksy site, plus the booking/admin architecture from the Encore proposal (dynamic schedule, WhatsApp booking, member accounts).
 
 > Note: an earlier scaffold of this project used a different (ivory/nude/sand/teal/magenta) design direction, written before the live site's actual CSS had been sampled. That palette is superseded — the design system below is sampled directly from efn.co.ke's compiled CSS, not approximated.
 

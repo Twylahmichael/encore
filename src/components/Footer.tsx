@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="bg-efn-black text-efn-white py-6">
       <div className="max-w-site mx-auto px-6 text-center text-sm">
-        Copyright © 2026 Encore Fitness and Nutrition | Built by{' '}
+        Copyright © 2026 Encore Fitness Studio | Built by{' '}
         <a
           href="https://imarisher.com"
           target="_blank"

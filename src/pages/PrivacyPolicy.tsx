@@ -19,7 +19,7 @@ export function PrivacyPolicy() {
             <h2 className="text-xl font-semibold mb-2">Who we are</h2>
             <p>
               This policy covers efn.co.ke and the Encore member portal and admin systems
-              operated by Encore Fitness and Nutrition, Nairobi. Questions about this policy or
+              operated by Encore Fitness Studio, Nairobi. Questions about this policy or
               your data can be sent through our <a href="/contacts" className="underline hover:text-efn-green">Contacts</a> page.
             </p>
           </div>

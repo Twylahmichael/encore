@@ -17,7 +17,7 @@ export function Header() {
     <header className="sticky top-0 z-40 bg-efn-white border-b border-efn-offwhite">
       <div className="max-w-site mx-auto px-6 py-4 flex items-center justify-between gap-6">
         <Link to="/" className="shrink-0">
-          <img src={logo} alt="Encore Fitness and Nutrition" className="h-12 w-auto" />
+          <img src={logo} alt="Encore Fitness Studio" className="h-12 w-auto" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 font-medium">

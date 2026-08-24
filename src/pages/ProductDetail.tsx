@@ -4,6 +4,19 @@ import { products } from '../data/products';
 import { productDescriptions } from '../data/productDescriptions';
 import { useCart } from '../lib/cartStore';
 import { ZoomableImage } from '../components/ZoomableImage';
+import { AccordionSection } from '../components/AccordionSection';
+import { ProductCard } from '../components/ProductCard';
+
+// "Related products" — the live site's WooCommerce grid pulls from the
+// same category; there's no category data in this app's flat product
+// list, so this takes the next 4 products after the current one (wrapping
+// around) — deterministic and different per product, without inventing
+// a categorization scheme that doesn't exist in the sampled data.
+function getRelatedProducts(currentSlug: string, count = 4) {
+  const idx = products.findIndex((p) => p.slug === currentSlug);
+  if (idx === -1) return products.slice(0, count);
+  return [...products.slice(idx + 1), ...products.slice(0, idx)].slice(0, count);
+}
 
 export function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -21,6 +34,8 @@ export function ProductDetail() {
     setTimeout(() => setAdded(false), 2000);
   };
 
+  const related = getRelatedProducts(product.slug);
+
   return (
     <section className="py-16">
       <div className="max-w-site mx-auto px-6">
@@ -28,7 +43,7 @@ export function ProductDetail() {
           <Link to="/our-products" className="hover:text-efn-green">Our Products</Link> / {product.name}
         </nav>
 
-        <div className="grid md:grid-cols-2 gap-12">
+        <div className="grid md:grid-cols-2 gap-12 mb-16">
           <ZoomableImage src={product.image} alt={product.name} />
 
           <div>
@@ -68,16 +83,30 @@ export function ProductDetail() {
             </div>
 
             {details?.descriptionHtml && (
-              <div>
-                <h2 className="text-xl font-semibold mb-3">Description</h2>
+              <AccordionSection title="Description" defaultOpen>
                 <div
                   className="prose-sm text-efn-black/80 space-y-3 [&_ul]:list-disc [&_ul]:pl-5 [&_strong]:font-semibold"
                   dangerouslySetInnerHTML={{ __html: details.descriptionHtml }}
                 />
-              </div>
+              </AccordionSection>
             )}
+
+            {/* Honest empty state — there's no review system wired up yet,
+                so this doesn't fabricate reviews or a rating widget. */}
+            <AccordionSection title="Reviews (0)">
+              <p className="text-sm text-efn-black/60">No reviews yet.</p>
+            </AccordionSection>
           </div>
         </div>
+
+        {related.length > 0 && (
+          <div>
+            <h2 className="text-2xl mb-6">Related products</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {related.map((p) => <ProductCard key={p.slug} product={p} />)}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -189,3 +189,41 @@ touched here since only the product-image animation was asked about). The
 live site's sticky-text-while-images-scroll-past layout (`position: sticky`
 on the text block) also wasn't replicated — only the two side images'
 convergent slide, which is what was visibly missing.
+
+## Eighth pass — mini-cart hover preview, account dashboard restructure
+
+Two requests from a client screenshot each:
+
+**Mini-cart hover preview** (`src/components/Header.tsx`). Hovering the
+cart icon in the header now shows a dropdown: line items (thumbnail,
+name, qty × price, remove), subtotal, View Cart / Checkout buttons —
+matching the live site's WooCommerce mini-cart. Reuses the existing
+`cartStore` (`lines`, `remove`, `priceFor`) — no new state.
+
+**Account page restructured as a sidebar dashboard**
+(`src/pages/portal/Account.tsx`), matching a screenshot of the live
+site's WooCommerce "My Account" page (Dashboard / Orders / Account
+details / Log out sidebar). Deliberately did **not** add a Downloads or
+Addresses tab — this app has no digital downloads, and doesn't collect a
+standalone account-level shipping address (checkout collects one per
+order, not per account), so those would have been the exact kind of
+vestigial, no-backing-data tab the retired `/login` page already was.
+
+New real feature that came out of this: an **Orders** tab, showing a
+member's own orders. There was no way for a signed-in member to read
+`orders` at all before this — RLS only had an `anon insert` policy and a
+`staff full access` policy, nothing for an ordinary authenticated member
+to `select` their own rows. Added via `supabase/migrations/
+0011_member_reads_own_orders.sql`: a new permissive SELECT policy
+matching `orders.customer_email` to the signed-in user's JWT email.
+**Limitation, stated on the page itself**: checkout doesn't require an
+account (guest checkout, matching the live site), so this only surfaces
+orders placed with the *same* email as the portal login — there's no
+hard `order → member` link at checkout time to do better than that
+without requiring login to check out, which wasn't asked for and would
+be a bigger behavior change.
+
+All existing Account.tsx content (Name/Phone/Email/Account Type/Loyalty
+Points, Subscription, coach-only My Classes) was preserved, not removed
+— just moved into the new tabbed layout, per explicit instruction not to
+drop any current features.
